@@ -3,6 +3,11 @@
         <div class="participant">
             <div class="participantCircle localUserText">{{initials}}</div>
             <div class="participantText">{{displayName}}</div>
+            <div style="float: right; line-height: 42px; margin-right: 20px;">
+                <div style="display: inline-block; width: 20px; vertical-align: middle;">
+                    <img src="images/loudspeaker.png" class="participantTopChatter" ng-show="topChatter == displayName"/>
+                </div>
+            </div>
         </div>
         <div class="participantsSeparator"></div>
 
@@ -18,8 +23,14 @@
                         <div class="participant">
                             <div class="participantCircle remoteUserText">{{participant.initials}}</div>
                             <div class="participantText">{{participant.displayName}}</div>
-                            <img src="images/typing.gif"
-                                 class="participantTyping" ng-show="participant.typing"/>
+                            <div style="float: right; line-height: 42px; margin-right: 20px;">
+                                <div style="display: inline-block; width: 20px; vertical-align: middle; margin-right: 5px;">
+                                    <img src="images/typing.gif" class="participantTyping" ng-show="participant.typing"/>
+                                </div>
+                                <div style="display: inline-block; width: 20px; vertical-align: middle;">
+                                    <img src="images/loudspeaker.png" class="participantTopChatter" ng-show="topChatter == participant.displayName"/>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
