@@ -18,9 +18,15 @@ import PackageDescription
 
 let package = Package(
     name: "KituraChatServer",
+    targets: [
+        Target(name: "KituraChatServer", dependencies: ["HistoryTable"]),
+        Target(name: "DatabaseSetup",    dependencies: ["HistoryTable"]),
+        Target(name: "HistoryTable", dependencies: [])
+    ],
     dependencies: [
         .Package(url: "https://github.com/IBM-Swift/Kitura.git", majorVersion: 1, minor: 7),
         .Package(url: "https://github.com/IBM-Swift/HeliumLogger.git", majorVersion: 1, minor: 7),
-        .Package(url: "https://github.com/IBM-Swift/Kitura-WebSocket", majorVersion: 0, minor: 8)
+        .Package(url: "https://github.com/IBM-Swift/Kitura-WebSocket", majorVersion: 0, minor: 8),
+        .Package(url: "https://github.com/IBM-Swift/Swift-Kuery-PostgreSQL", majorVersion: 0, minor: 11)
     ]
 )
