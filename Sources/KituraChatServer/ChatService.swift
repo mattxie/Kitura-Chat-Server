@@ -31,10 +31,15 @@ class ChatService: WebSocketService {
         case clientInChat = "c"
         case connected = "C"
         case disconnected = "D"
+        case history = "H"
+        case historyEnd = "e"
         case sentMessage = "M"
         case stoppedTyping = "S"
         case startedTyping = "T"
+        case topChatter = "B"
     }
+    
+    private let history = ChatHistory()
     
     /// Called when a WebSocket client connects to the server and is connected to a specific
     /// `WebSocketService`.
@@ -87,7 +92,19 @@ class ChatService: WebSocketService {
             let connectionInfo = connections[from.id]
             unlockConnectionsLock()
             
-            if  connectionInfo != nil {
+            if let connectionInfo = connectionInfo {
+                if messageType == MessageType.sentMessage.rawValue {
+                    let (user, _) = connectionInfo
+                    self.history.save(message: message, user: user, time: Date())
+                    
+                    //Get top chatter and update all users about it
+                    self.history.getTopChatter() { top in
+                        if let topChatter = top {
+                            self.echo(message: "\(MessageType.topChatter.rawValue):\(topChatter)")
+                        }
+                    }
+                }
+                
                 echo(message: message)
             }
         }
