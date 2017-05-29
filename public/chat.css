@@ -101,6 +101,20 @@
     vertical-align: top;
 }
 
+.historyText {
+    background-color: #F3F5F6;
+    display: inline-block;
+    font-size: 16px;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.historySeparator {
+    color: #aaaaaa;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .inputArea {
     height: 60px;
     position: absolute;
@@ -253,8 +267,11 @@
 
 .participantTyping {
     vertical-align: middle;
-    float: right;
-    margin: 12px 16px 0 0;
+}
+
+.participantTopChatter {
+    width: 100%;
+    vertical-align: middle;
 }
 
 .titleBar {
