@@ -20,9 +20,9 @@ import LoggerAPI
 public class HistoryTable_v0: Table {
     let tableName = "ChatHistory"
         
-    let user = Column("\"user\"", Varchar.self, length: 50)
-    let time = Column("time", Timestamp.self)
-    let message = Column("message", Varchar.self, length: 1500)
+    public let user = Column("\"user\"", Varchar.self, length: 50)
+    public let time = Column("time", Timestamp.self)
+    public let message = Column("message", Varchar.self, length: 1500)
 }
 
-typealias HistoryTable = HistoryTable_v0
+public typealias HistoryTable = HistoryTable_v0
