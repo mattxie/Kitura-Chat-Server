@@ -20,6 +20,67 @@ var formattedTime = function() {
     var minutes = date.getMinutes();
     return date.getHours() + ':' + (minutes < 10 ? '0' : '') + minutes;
 }
+ 
+var extractTime = function(date) {
+    var dateArray = date.split(' ');
+    var time = dateArray[1];
+    return time.slice(0, -3);
+}
+ 
+var extractDay = function(date) {
+    var now = new Date();
+    var nowYear = now.getFullYear();
+    var nowMonth = now.getMonth() + 1;
+    var nowDay = now.getDate();
+ 
+    var datePart = date.split(' ')[0];
+    var dateParts = datePart.split('-');
+ 
+    if (dateParts[0] == nowYear && dateParts[1] == nowMonth && dateParts[2] == nowDay) {
+        return 'Today';
+    }
+ 
+    var month = dateParts[1];
+    if (month.startsWith('0')) {
+        month = month.slice(1);
+    }
+    var monthNames = [
+                   'January', 'February', 'March',
+                   'April', 'May', 'June', 'July',
+                   'August', 'September', 'October',
+                   'November', 'December'
+                   ];
+    var monthName = monthNames[month - 1];
+ 
+    var day = dateParts[2];
+    var dayFirstDigit = day.slice(-1);
+    var daySecondDigit = day.slice(1);
+    if (day.startsWith('0')) {
+        day = day.slice(1);
+    }
+ 
+    var dayName;
+    switch (daySecondDigit) {
+        case 1:
+            if (dayFirstDigit !== '1') {
+                dayName = day + 'st';
+                break;
+            }
+        case 2:
+            if (dayFirstDigit !== '1') {
+                dayName = day + 'st';
+                break;
+            }
+        case 3:
+            if (dayFirstDigit !== '1') {
+                dayName = day + 'rd';
+                break;
+            }
+        default:
+            dayName = day + 'th';
+    }
+    return monthName + ' ' + dayName;
+}
 
 var displayMessage = function($scope, displayName, messageText) {
     messageText = messageText.replace(/\n/g, '<br>');
@@ -161,6 +222,11 @@ var setupWebSocketClient = function($scope) {
         var parts = event.data.split(':');
         if (parts.length > 1) {
             switch(parts[0]) {
+                case 'B':
+                    $scope.topChatter = parts[1];
+                    $scope.$apply();
+                    break;
+ 
                 case 'c':
                     participantConnected($scope, parts[1], true);
                     break;
@@ -204,6 +270,8 @@ app.controller("chat-controller", function($scope) {
     $scope.displayName = "";
     $scope.initials = "";
     $scope.isTyping = 0;
+    $scope.lastHistoryDay = "";
+    $scope.topChatter = "";
 
     $scope.displayNameEntered = function() {
         $('.coverFrame').hide();
