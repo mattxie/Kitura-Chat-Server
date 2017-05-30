@@ -32,7 +32,7 @@ class ChatService: WebSocketService {
         case connected = "C"
         case disconnected = "D"
         case history = "H"
-        case historyEnd = "e"
+        case historyEnd = "h"
         case sentMessage = "M"
         case stoppedTyping = "S"
         case startedTyping = "T"
@@ -82,9 +82,9 @@ class ChatService: WebSocketService {
     public func received(message: String, from: WebSocketConnection) {
         guard message.characters.count > 1 else { return }
         
-        guard let messageType = message.characters.first else { return }
-        
-        let displayName = String(message.characters.dropFirst(2))
+        let messageParts = message.components(separatedBy: ":")
+        guard messageParts.count > 0 else { return }
+        let messageType = messageParts[0].characters.first
         
         if messageType == MessageType.sentMessage.rawValue || messageType == MessageType.startedTyping.rawValue ||
                        messageType == MessageType.stoppedTyping.rawValue {
@@ -95,10 +95,14 @@ class ChatService: WebSocketService {
             if let connectionInfo = connectionInfo {
                 if messageType == MessageType.sentMessage.rawValue {
                     let (user, _) = connectionInfo
-                    self.history.save(message: message, user: user, time: Date())
+                    var actualMessage = ""
+                    for i in 2..<messageParts.count {
+                        actualMessage += ":" + messageParts[i]
+                    }
+                    history.save(message: String(actualMessage.characters.dropFirst(1)), user: user, time: Date())
                     
                     //Get top chatter and update all users about it
-                    self.history.getTopChatter() { top in
+                    history.getTopChatter() { top in
                         if let topChatter = top {
                             self.echo(message: "\(MessageType.topChatter.rawValue):\(topChatter)")
                         }
@@ -109,6 +113,13 @@ class ChatService: WebSocketService {
             }
         }
         else if messageType == MessageType.connected.rawValue {
+            guard messageParts.count > 1 else {
+                from.close(reason: .invalidDataContents, description: "Connect message must have client's name")
+                return
+            }
+            
+            let displayName = messageParts[1]
+            
             guard displayName.characters.count > 0 else {
                 from.close(reason: .invalidDataContents, description: "Connect message must have client's name")
                 return
@@ -123,6 +134,26 @@ class ChatService: WebSocketService {
             unlockConnectionsLock()
             
             echo(message: message)
+            
+            history.getChatHistory() { rows in
+                if let rows = rows {
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyyMMddHHmmss"
+                    for row in rows {
+                        if let user = row["user"] as? String, let message = row["message"] as? String, let time = row["time"] as? Date {
+                            from.send(message: "\(MessageType.history.rawValue):\(user):\(formatter.string(from: time)):\(message)")
+                        }
+                    }
+                }
+                from.send(message: "\(MessageType.historyEnd.rawValue)")
+            }
+            
+            //Get top chatter and update all users about it
+            history.getTopChatter() { top in
+                if let topChatter = top {
+                    from.send(message: "\(MessageType.topChatter.rawValue):\(topChatter)")
+                }
+            }
         }
         else {
             invalidData(from: from, description: "First character of the message must be a C, M, S, or T")
